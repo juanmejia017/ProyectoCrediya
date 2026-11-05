@@ -1,6 +1,6 @@
 package co.com.crediya.api;
 
-import co.com.bancolombia.api.config.CorsConfig;
+import co.com.crediya.api.config.CorsConfig;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 @EnableAutoConfiguration
 @EnableWebMvc
-@ComponentScan(basePackages = "co.com.bancolombia.api",
+@ComponentScan(basePackages = "co.com.crediya.api",
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = CorsConfig.class
