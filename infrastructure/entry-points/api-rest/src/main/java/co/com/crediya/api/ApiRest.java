@@ -1,31 +1,32 @@
 package co.com.crediya.api;
+
+import co.com.crediya.api.dto.RegistrarUsuarioRequest;
+import co.com.crediya.api.dto.UsuarioResponse;
+import co.com.crediya.model.user.User;
+import co.com.crediya.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * API Rest controller.
- * 
- * Example of how to declare and use a use case:
- * <pre>
- * private final MyUseCase useCase;
- * 
- * public String commandName() {
- *     return useCase.execute();
- * }
- * </pre>
- */
+@Slf4j
 @RestController
-@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/usuarios", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class ApiRest {
 
+    private final UserUseCase userUseCase;
 
-    @GetMapping(path = "/usecase/path")
-    public String commandName() {
-        return "Value from use case v1";
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UsuarioResponse> registrar(@RequestBody RegistrarUsuarioRequest request) {
+        log.info("POST /api/v1/usuarios - inicio registro de usuario");
+        User creado = userUseCase.registrar(request.toDomain());
+        log.info("POST /api/v1/usuarios - usuario registrado con id {}", creado.getIdUsuario());
+        return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioResponse.fromDomain(creado));
     }
-
 }
