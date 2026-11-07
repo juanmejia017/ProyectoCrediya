@@ -3,6 +3,7 @@ package co.com.crediya.jpa;
 import co.com.crediya.jpa.entity.UserEntity;
 import co.com.crediya.jpa.helper.AdapterOperations;
 import co.com.crediya.model.exceptions.CorreoYaRegistradoException;
+import co.com.crediya.model.exceptions.DocumentoYaRegistradoException;
 import co.com.crediya.model.user.User;
 import co.com.crediya.model.user.gateways.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,8 @@ import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Locale;
 
 @Slf4j
 @Repository
@@ -23,14 +26,23 @@ public class JPARepositoryAdapter extends AdapterOperations<User, UserEntity, Lo
     @Override
     @Transactional
     public User save(User user) {
-        log.info("Persistiendo usuario con correo {}", user.getCorreoElectronico());
+        log.info("Persistiendo nuevo usuario");
         try {
             User guardado = super.save(user);
             log.info("Usuario persistido con id {}", guardado.getIdUsuario());
             return guardado;
         } catch (DataIntegrityViolationException e) {
-            log.warn("Violación de integridad al guardar el correo {}", user.getCorreoElectronico());
-            throw new CorreoYaRegistradoException(user.getCorreoElectronico());
+            String causa = String.valueOf(e.getMostSpecificCause().getMessage()).toLowerCase(Locale.ROOT);
+            if (causa.contains(UserEntity.UK_CORREO)) {
+                log.warn("Restricción única violada: {}", UserEntity.UK_CORREO);
+                throw new CorreoYaRegistradoException();
+            }
+            if (causa.contains(UserEntity.UK_DOCUMENTO)) {
+                log.warn("Restricción única violada: {}", UserEntity.UK_DOCUMENTO);
+                throw new DocumentoYaRegistradoException();
+            }
+            log.error("Violación de integridad no controlada al guardar el usuario", e);
+            throw e;
         }
     }
 
@@ -38,6 +50,12 @@ public class JPARepositoryAdapter extends AdapterOperations<User, UserEntity, Lo
     @Transactional(readOnly = true)
     public boolean existsByCorreoElectronico(String correoElectronico) {
         return repository.existsByCorreoElectronico(correoElectronico);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByDocumentoIdentidad(String documentoIdentidad) {
+        return repository.existsByDocumentoIdentidad(documentoIdentidad);
     }
 
     @Override
