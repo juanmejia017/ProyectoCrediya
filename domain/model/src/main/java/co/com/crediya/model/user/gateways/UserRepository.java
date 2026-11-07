@@ -5,4 +5,5 @@ import co.com.crediya.model.user.User;
 public interface UserRepository {
     User save(User user);
     boolean existsByCorreoElectronico(String correoElectronico);
+    boolean existsByDocumentoIdentidad(String documentoIdentidad);
 }

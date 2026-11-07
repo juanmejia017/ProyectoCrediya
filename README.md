@@ -45,3 +45,44 @@ Los entry points representan los puntos de entrada de la aplicación o el inicio
 Este módulo es el más externo de la arquitectura, es el encargado de ensamblar los distintos módulos, resolver las dependencias y crear los beans de los casos de use (UseCases) de forma automática, inyectando en éstos instancias concretas de las dependencias declaradas. Además inicia la aplicación (es el único módulo del proyecto donde encontraremos la función “public static void main(String[] args)”.
 
 **Los beans de los casos de uso se disponibilizan automaticamente gracias a un '@ComponentScan' ubicado en esta capa.**
+
+# Cómo ejecutar el microservicio de autenticación
+
+## Requisitos
+
+- Java 25
+- Docker Desktop (para la base de datos PostgreSQL)
+
+## Variables de entorno
+
+| Variable      | Descripción                     | Valor por defecto                              |
+|---------------|---------------------------------|------------------------------------------------|
+| `DB_URL`      | URL JDBC de PostgreSQL          | `jdbc:postgresql://localhost:5432/crediya_db`  |
+| `DB_USERNAME` | Usuario de la base de datos     | *(obligatoria)*                                |
+| `DB_PASSWORD` | Contraseña de la base de datos  | *(obligatoria)*                                |
+
+## Pasos (PowerShell)
+
+```powershell
+$env:DB_USERNAME="crediya"
+$env:DB_PASSWORD="crediya"
+
+docker compose up -d
+.\gradlew.bat clean build
+.\gradlew.bat :app-service:bootRun
+```
+
+## Endpoints
+
+### `POST /api/v1/usuarios` — HU 1: Registrar usuarios
+
+Campos obligatorios: `nombres`, `apellidos`, `correoElectronico`, `salarioBase` (entre 0 y 15.000.000).
+Campos opcionales validados si se envían: `fechaNacimiento` (pasada), `telefono` (7–15 dígitos), `documentoIdentidad` (5–20 alfanuméricos).
+
+| Código | Cuándo                                                        |
+|--------|---------------------------------------------------------------|
+| 201    | Usuario registrado (header `Location` con la URL del recurso) |
+| 400    | Datos inválidos o JSON mal formado                            |
+| 409    | Correo o documento de identidad ya registrados                |
+| 415    | El `Content-Type` no es `application/json`                    |
+| 500    | Error inesperado (mensaje genérico, detalle solo en el log)   |
