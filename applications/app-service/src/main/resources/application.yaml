@@ -9,8 +9,8 @@ spring:
     include: null
   datasource:
     url: "${DB_URL:jdbc:postgresql://localhost:5432/crediya_db}"
-    username: "${DB_USERNAME:crediya}"
-    password: "${DB_PASSWORD:crediya}"
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
     driverClassName: "org.postgresql.Driver"
   jpa:
     databasePlatform: "org.hibernate.dialect.PostgreSQLDialect"

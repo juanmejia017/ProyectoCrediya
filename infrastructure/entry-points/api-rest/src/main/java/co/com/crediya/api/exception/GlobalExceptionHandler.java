@@ -4,6 +4,7 @@ import co.com.crediya.api.dto.ErrorResponse;
 import co.com.crediya.model.exceptions.BusinessException;
 import co.com.crediya.model.exceptions.CorreoYaRegistradoException;
 import co.com.crediya.model.exceptions.DatosInvalidosException;
+import co.com.crediya.model.exceptions.DocumentoYaRegistradoException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,9 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getCodigo(), ex.getMessage(), ex.getErrores());
     }
 
-    @ExceptionHandler(CorreoYaRegistradoException.class)
-    public ResponseEntity<ErrorResponse> handleCorreoDuplicado(CorreoYaRegistradoException ex) {
-        log.warn("Correo duplicado: {}", ex.getMessage());
+    @ExceptionHandler({CorreoYaRegistradoException.class, DocumentoYaRegistradoException.class})
+    public ResponseEntity<ErrorResponse> handleDuplicado(BusinessException ex) {
+        log.warn("Registro duplicado [{}]", ex.getCodigo());
         return build(HttpStatus.CONFLICT, ex.getCodigo(), ex.getMessage(), List.of());
     }
 
@@ -38,7 +39,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleJsonInvalido(HttpMessageNotReadableException ex) {
-        log.warn("Cuerpo de la petición ilegible: {}", ex.getMessage());
+        log.warn("Cuerpo de la petición ilegible");
         return build(HttpStatus.BAD_REQUEST, "JSON_INVALIDO",
                 "El cuerpo de la petición es inválido. Revisa que salarioBase sea numérico y fechaNacimiento tenga formato yyyy-MM-dd",
                 List.of());
@@ -60,4 +61,4 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String codigo, String mensaje, List<String> detalles) {
         return ResponseEntity.status(status).body(ErrorResponse.of(status.value(), codigo, mensaje, detalles));
     }
-}
+}

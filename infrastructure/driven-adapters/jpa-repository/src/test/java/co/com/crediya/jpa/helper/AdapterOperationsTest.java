@@ -4,6 +4,7 @@ import co.com.crediya.jpa.JPARepository;
 import co.com.crediya.jpa.JPARepositoryAdapter;
 import co.com.crediya.jpa.entity.UserEntity;
 import co.com.crediya.model.exceptions.CorreoYaRegistradoException;
+import co.com.crediya.model.exceptions.DocumentoYaRegistradoException;
 import co.com.crediya.model.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,9 +71,23 @@ class AdapterOperationsTest {
 
     @Test
     void testSaveDuplicatedEmailThrowsBusinessException() {
-        when(repository.save(any(UserEntity.class))).thenThrow(new DataIntegrityViolationException("duplicado"));
+        when(repository.save(any(UserEntity.class))).thenThrow(violacion(UserEntity.UK_CORREO));
 
         assertThrows(CorreoYaRegistradoException.class, () -> adapter.save(user));
+    }
+
+    @Test
+    void testSaveDuplicatedDocumentThrowsBusinessException() {
+        when(repository.save(any(UserEntity.class))).thenThrow(violacion(UserEntity.UK_DOCUMENTO));
+
+        assertThrows(DocumentoYaRegistradoException.class, () -> adapter.save(user));
+    }
+
+    @Test
+    void testSaveOtherIntegrityViolationIsRethrown() {
+        when(repository.save(any(UserEntity.class))).thenThrow(violacion("otra_restriccion"));
+
+        assertThrows(DataIntegrityViolationException.class, () -> adapter.save(user));
     }
 
     @Test
@@ -80,6 +95,18 @@ class AdapterOperationsTest {
         when(repository.existsByCorreoElectronico("juan@correo.com")).thenReturn(true);
 
         assertTrue(adapter.existsByCorreoElectronico("juan@correo.com"));
+    }
+
+    @Test
+    void testExistsByDocumentoIdentidad() {
+        when(repository.existsByDocumentoIdentidad("1020304050")).thenReturn(true);
+
+        assertTrue(adapter.existsByDocumentoIdentidad("1020304050"));
+    }
+
+    private static DataIntegrityViolationException violacion(String restriccion) {
+        return new DataIntegrityViolationException("could not execute statement",
+                new RuntimeException("ERROR: duplicate key value violates unique constraint \"" + restriccion + "\""));
     }
 
     @Test
