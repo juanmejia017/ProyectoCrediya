@@ -51,7 +51,7 @@ Este módulo es el más externo de la arquitectura, es el encargado de ensamblar
 | Microservicio | Ubicación | Puerto | Stack |
 |---|---|---|---|
 | Autenticación (HU 1) | raíz del repositorio | 8080 | Spring MVC + JPA |
-| Solicitudes (HU 2) | [`crediya-solicitudes-ms/`](crediya-solicitudes-ms/README.md) | 8081 | Spring WebFlux + R2DBC |
+| Solicitudes (HU 2) | [`crediya-solicitudes-ms/`](crediya-solicitudes-ms/README.md) | 8081 | Spring MVC + JPA |
 
 # Cómo ejecutar el microservicio de autenticación
 
