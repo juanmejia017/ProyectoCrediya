@@ -91,3 +91,6 @@ Campos opcionales validados si se envían: `fechaNacimiento` (pasada), `telefono
 | 409    | Correo o documento de identidad ya registrados                |
 | 415    | El `Content-Type` no es `application/json`                    |
 | 500    | Error inesperado (mensaje genérico, detalle solo en el log)   |
+
+Todas las respuestas incluyen el header `X-Trace-Id` (si lo envías, se reutiliza) y los errores lo devuelven en el campo
+`traceId`. Ese mismo id aparece al inicio de cada línea de log de la petición.
