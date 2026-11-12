@@ -2,6 +2,7 @@ package co.com.crediya.jpa;
 
 import co.com.crediya.jpa.entity.UserEntity;
 import co.com.crediya.jpa.helper.AdapterOperations;
+import co.com.crediya.jpa.repository.UserJpaRepository;
 import co.com.crediya.model.exceptions.CorreoYaRegistradoException;
 import co.com.crediya.model.exceptions.DocumentoYaRegistradoException;
 import co.com.crediya.model.user.User;
@@ -16,11 +17,11 @@ import java.util.Locale;
 
 @Slf4j
 @Repository
-public class JPARepositoryAdapter extends AdapterOperations<User, UserEntity, Long, JPARepository>
+public class UserRepositoryAdapter extends AdapterOperations<User, UserEntity, Long, UserJpaRepository>
         implements UserRepository {
 
-    public JPARepositoryAdapter(JPARepository repository, ObjectMapper mapper) {
-        super(repository, mapper, JPARepositoryAdapter::toDomain);
+    public UserRepositoryAdapter(UserJpaRepository repository, ObjectMapper mapper) {
+        super(repository, mapper, UserRepositoryAdapter::toDomain);
     }
 
     @Override
