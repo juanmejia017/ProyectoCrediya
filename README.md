@@ -46,6 +46,13 @@ Este módulo es el más externo de la arquitectura, es el encargado de ensamblar
 
 **Los beans de los casos de uso se disponibilizan automaticamente gracias a un '@ComponentScan' ubicado en esta capa.**
 
+# Microservicios del repositorio
+
+| Microservicio | Ubicación | Puerto | Stack |
+|---|---|---|---|
+| Autenticación (HU 1) | raíz del repositorio | 8080 | Spring MVC + JPA |
+| Solicitudes (HU 2) | [`crediya-solicitudes-ms/`](crediya-solicitudes-ms/README.md) | 8081 | Spring WebFlux + R2DBC |
+
 # Cómo ejecutar el microservicio de autenticación
 
 ## Requisitos
