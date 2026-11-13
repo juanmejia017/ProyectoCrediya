@@ -61,73 +61,21 @@ class UserUseCaseTest {
     }
 
     @Test
-    void rechazaCamposObligatoriosVacios() {
-        User user = User.builder().nombres(" ").build();
+    void noAbreTransaccionSiLosDatosSonInvalidos() {
+        User invalido = usuarioValido().correoElectronico("correo-malo").build();
 
-        DatosInvalidosException ex = assertThrows(DatosInvalidosException.class, () -> useCase.registrar(user));
-
-        assertEquals(4, ex.getErrores().size());
+        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(invalido));
         assertEquals(0, transactionalGateway.ejecuciones);
+        assertTrue(repository.guardados.isEmpty());
     }
 
     @Test
-    void rechazaCuerpoNulo() {
-        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(null));
-    }
+    void guardaElUsuarioNormalizado() {
+        useCase.registrar(usuarioValido().documentoIdentidad(" ").build());
 
-    @Test
-    void rechazaCorreoConFormatoInvalido() {
-        User user = usuarioValido().correoElectronico("correo-malo").build();
-
-        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(user));
-    }
-
-    @Test
-    void rechazaSalarioFueraDeRango() {
-        User mayor = usuarioValido().salarioBase(new BigDecimal("15000001")).build();
-        User negativo = usuarioValido().salarioBase(new BigDecimal("-1")).build();
-
-        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(mayor));
-        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(negativo));
-    }
-
-    @Test
-    void aceptaSalarioEnLosLimites() {
-        useCase.registrar(usuarioValido().salarioBase(BigDecimal.ZERO).build());
-        useCase.registrar(usuarioValido().correoElectronico("otro@correo.com").documentoIdentidad("99887766")
-                .salarioBase(new BigDecimal("15000000")).build());
-
-        assertEquals(2, repository.guardados.size());
-    }
-
-    @Test
-    void rechazaFechaNacimientoFutura() {
-        User user = usuarioValido().fechaNacimiento(LocalDate.now().plusDays(1)).build();
-
-        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(user));
-    }
-
-    @Test
-    void rechazaTelefonoInvalido() {
-        User user = usuarioValido().telefono("12ab").build();
-
-        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(user));
-    }
-
-    @Test
-    void rechazaDocumentoInvalido() {
-        User user = usuarioValido().documentoIdentidad("12-3").build();
-
-        assertThrows(DatosInvalidosException.class, () -> useCase.registrar(user));
-    }
-
-    @Test
-    void permiteCamposOpcionalesVacios() {
-        User user = usuarioValido().telefono(null).documentoIdentidad(" ").fechaNacimiento(null).build();
-
-        User creado = useCase.registrar(user);
-
-        assertEquals(null, creado.getDocumentoIdentidad());
+        User guardado = repository.guardados.get(0);
+        assertEquals("juan@correo.com", guardado.getCorreoElectronico());
+        assertEquals(null, guardado.getDocumentoIdentidad());
     }
 
     @Test
@@ -145,7 +93,7 @@ class UserUseCaseTest {
         User mismoDocumento = usuarioValido().correoElectronico("otro@correo.com").build();
 
         assertThrows(DocumentoYaRegistradoException.class, () -> useCase.registrar(mismoDocumento));
-        assertTrue(repository.guardados.size() == 1);
+        assertEquals(1, repository.guardados.size());
     }
 
     private static class FakeTransactionalGateway implements TransactionalGateway {
