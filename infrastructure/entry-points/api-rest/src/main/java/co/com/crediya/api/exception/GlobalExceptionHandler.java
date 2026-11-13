@@ -5,13 +5,16 @@ import co.com.crediya.model.exceptions.BusinessException;
 import co.com.crediya.model.exceptions.CorreoYaRegistradoException;
 import co.com.crediya.model.exceptions.DatosInvalidosException;
 import co.com.crediya.model.exceptions.DocumentoYaRegistradoException;
+import co.com.crediya.model.exceptions.TechnicalException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 
@@ -51,9 +54,30 @@ public class GlobalExceptionHandler {
                 "El Content-Type debe ser application/json", List.of());
     }
 
+    @ExceptionHandler(TechnicalException.class)
+    public ResponseEntity<ErrorResponse> handleTechnical(TechnicalException ex) {
+        log.error("Error técnico [{}]: {}", ex.getCodigo(), ex.getMessage());
+        return errorInterno();
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMetodo(HttpRequestMethodNotSupportedException ex) {
+        return build(HttpStatus.METHOD_NOT_ALLOWED, "METODO_NO_PERMITIDO",
+                "El método HTTP no está permitido para este recurso", List.of());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoEncontrado(NoResourceFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", "El recurso solicitado no existe", List.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Error inesperado", ex);
+        return errorInterno();
+    }
+
+    private ResponseEntity<ErrorResponse> errorInterno() {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "ERROR_INTERNO",
                 "Ocurrió un error inesperado. Intenta de nuevo más tarde", List.of());
     }
@@ -61,4 +85,4 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String codigo, String mensaje, List<String> detalles) {
         return ResponseEntity.status(status).body(ErrorResponse.of(status.value(), codigo, mensaje, detalles));
     }
-}
+}

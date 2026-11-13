@@ -1,4 +1,11 @@
-# Proyecto Base Implementando Clean Architecture
+# CrediYa — Microservicio de Autenticación (`crediya-autenticacion-ms`)
+
+Microservicio **imperativo (Spring MVC + JPA)** construido con Clean Architecture (scaffold de Bancolombia, `reactive=false`).
+Es un repositorio independiente con su propio build Gradle, base de datos y `docker-compose.yml`.
+El microservicio de solicitudes vive en su propio repositorio:
+[`crediya-solicitudes-ms`](https://github.com/juanmejia017/crediya-solicitudes-ms).
+
+## Proyecto Base Implementando Clean Architecture
 
 ## Antes de Iniciar
 
@@ -46,13 +53,6 @@ Este módulo es el más externo de la arquitectura, es el encargado de ensamblar
 
 **Los beans de los casos de uso se disponibilizan automaticamente gracias a un '@ComponentScan' ubicado en esta capa.**
 
-# Microservicios del repositorio
-
-| Microservicio | Ubicación | Puerto | Stack |
-|---|---|---|---|
-| Autenticación (HU 1) | raíz del repositorio | 8080 | Spring MVC + JPA |
-| Solicitudes (HU 2) | [`crediya-solicitudes-ms/`](crediya-solicitudes-ms/README.md) | 8081 | Spring MVC + JPA |
-
 # Cómo ejecutar el microservicio de autenticación
 
 ## Requisitos
@@ -93,3 +93,6 @@ Campos opcionales validados si se envían: `fechaNacimiento` (pasada), `telefono
 | 409    | Correo o documento de identidad ya registrados                |
 | 415    | El `Content-Type` no es `application/json`                    |
 | 500    | Error inesperado (mensaje genérico, detalle solo en el log)   |
+
+Todas las respuestas incluyen el header `X-Trace-Id` (si lo envías, se reutiliza) y los errores lo devuelven en el campo
+`traceId`. Ese mismo id aparece al inicio de cada línea de log de la petición.
