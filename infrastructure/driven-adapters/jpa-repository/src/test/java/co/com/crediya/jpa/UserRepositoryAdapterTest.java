@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
@@ -25,9 +24,6 @@ class UserRepositoryAdapterTest {
     @Mock
     private UserJpaRepository repository;
 
-    @Mock
-    private ObjectMapper objectMapper;
-
     private UserRepositoryAdapter adapter;
 
     private User user;
@@ -36,7 +32,7 @@ class UserRepositoryAdapterTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        adapter = new UserRepositoryAdapter(repository, objectMapper);
+        adapter = new UserRepositoryAdapter(repository);
 
         user = User.builder()
                 .nombres("Juan")
