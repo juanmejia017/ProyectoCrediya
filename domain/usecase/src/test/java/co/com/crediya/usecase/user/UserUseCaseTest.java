@@ -3,7 +3,6 @@ package co.com.crediya.usecase.user;
 import co.com.crediya.model.exceptions.CorreoYaRegistradoException;
 import co.com.crediya.model.exceptions.DatosInvalidosException;
 import co.com.crediya.model.exceptions.DocumentoYaRegistradoException;
-import co.com.crediya.model.transaction.gateways.TransactionalGateway;
 import co.com.crediya.model.user.User;
 import co.com.crediya.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,14 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UserUseCaseTest {
 
     private FakeUserRepository repository;
-    private FakeTransactionalGateway transactionalGateway;
     private UserUseCase useCase;
 
     @BeforeEach
     void setUp() {
         repository = new FakeUserRepository();
-        transactionalGateway = new FakeTransactionalGateway();
-        useCase = new UserUseCase(repository, transactionalGateway);
+        useCase = new UserUseCase(repository);
     }
 
     private User.UserBuilder usuarioValido() {
@@ -54,18 +50,11 @@ class UserUseCaseTest {
     }
 
     @Test
-    void ejecutaVerificacionYGuardadoDentroDeUnaTransaccion() {
-        useCase.registrar(usuarioValido().build());
-
-        assertEquals(1, transactionalGateway.ejecuciones);
-    }
-
-    @Test
-    void noAbreTransaccionSiLosDatosSonInvalidos() {
+    void noConsultaNiGuardaSiLosDatosSonInvalidos() {
         User invalido = usuarioValido().correoElectronico("correo-malo").build();
 
         assertThrows(DatosInvalidosException.class, () -> useCase.registrar(invalido));
-        assertEquals(0, transactionalGateway.ejecuciones);
+        assertEquals(0, repository.consultas);
         assertTrue(repository.guardados.isEmpty());
     }
 
@@ -96,18 +85,9 @@ class UserUseCaseTest {
         assertEquals(1, repository.guardados.size());
     }
 
-    private static class FakeTransactionalGateway implements TransactionalGateway {
-        private int ejecuciones;
-
-        @Override
-        public <T> T execute(Supplier<T> operation) {
-            ejecuciones++;
-            return operation.get();
-        }
-    }
-
     private static class FakeUserRepository implements UserRepository {
         private final List<User> guardados = new ArrayList<>();
+        private int consultas;
 
         @Override
         public User save(User user) {
@@ -118,11 +98,13 @@ class UserUseCaseTest {
 
         @Override
         public boolean existsByCorreoElectronico(String correoElectronico) {
+            consultas++;
             return guardados.stream().anyMatch(u -> correoElectronico.equals(u.getCorreoElectronico()));
         }
 
         @Override
         public boolean existsByDocumentoIdentidad(String documentoIdentidad) {
+            consultas++;
             return guardados.stream().anyMatch(u -> documentoIdentidad.equals(u.getDocumentoIdentidad()));
         }
     }
