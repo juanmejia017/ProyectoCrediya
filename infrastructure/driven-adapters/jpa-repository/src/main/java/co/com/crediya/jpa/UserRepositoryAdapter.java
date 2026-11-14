@@ -1,14 +1,13 @@
 package co.com.crediya.jpa;
 
 import co.com.crediya.jpa.entity.UserEntity;
-import co.com.crediya.jpa.helper.AdapterOperations;
 import co.com.crediya.jpa.repository.UserJpaRepository;
 import co.com.crediya.model.exceptions.CorreoYaRegistradoException;
 import co.com.crediya.model.exceptions.DocumentoYaRegistradoException;
 import co.com.crediya.model.user.User;
 import co.com.crediya.model.user.gateways.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,19 +16,18 @@ import java.util.Locale;
 
 @Slf4j
 @Repository
-public class UserRepositoryAdapter extends AdapterOperations<User, UserEntity, Long, UserJpaRepository>
-        implements UserRepository {
+@RequiredArgsConstructor
+public class UserRepositoryAdapter implements UserRepository {
 
-    public UserRepositoryAdapter(UserJpaRepository repository, ObjectMapper mapper) {
-        super(repository, mapper, UserRepositoryAdapter::toDomain);
-    }
+    private final UserJpaRepository repository;
 
     @Override
     @Transactional
     public User save(User user) {
         log.info("Persistiendo nuevo usuario");
         try {
-            User guardado = super.save(user);
+            UserEntity entidad = toData(user);
+            User guardado = toDomain(repository.save(entidad));
             log.info("Usuario persistido con id {}", guardado.getIdUsuario());
             return guardado;
         } catch (DataIntegrityViolationException e) {
@@ -59,8 +57,7 @@ public class UserRepositoryAdapter extends AdapterOperations<User, UserEntity, L
         return repository.existsByDocumentoIdentidad(documentoIdentidad);
     }
 
-    @Override
-    protected UserEntity toData(User user) {
+    private static UserEntity toData(User user) {
         return UserEntity.builder()
                 .idUsuario(user.getIdUsuario())
                 .nombres(user.getNombres())
